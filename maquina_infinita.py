@@ -96,6 +96,22 @@ OLLAMA_URL = 'http://localhost:11434/api/generate'
 def status():
     return jsonify({'status': 'online', 'model': MODELO, 'gpu': 'T4 GPU 15GB',
                     'timestamp': datetime.now().isoformat()})
+@app.route('/v1/chat/completions', methods=['POST'])
+def proxy_chat():
+    try:
+        r = req.post('http://localhost:11434/v1/chat/completions', json=request.json, timeout=600)
+        return Response(r.content, status=r.status_code, content_type=r.headers.get('content-type'))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/v1/models', methods=['GET'])
+def proxy_models():
+    try:
+        r = req.get('http://localhost:11434/v1/models', timeout=10)
+        return Response(r.content, status=r.status_code, content_type=r.headers.get('content-type'))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/gerar', methods=['POST'])
